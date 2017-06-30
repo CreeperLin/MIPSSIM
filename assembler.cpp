@@ -1,15 +1,15 @@
 #include <bits/stdc++.h>
 #include "main.h"
+#include "instruction.cpp"
 //#include <iostream>
 using namespace std;
 const int TEXT = 0x500;
 const int DATA = 0x15000;
-const byte JI = 1 << 7 + 1 << 6;
-const byte II = 1 << 7;
-const byte RI = 1 << 6;
+const byte RI = 1 << 7;
+const byte JI = 1 << 6;
 //const byte OI = 0;
-int text_p;
-int data_p;
+int text_p = TEXT;
+int data_p = DATA;
 enum tid
 {
     asst, opct, regt, numt, litt, addt, labt
@@ -54,136 +54,82 @@ struct token
 unordered_map<string, byte> opmap;
 unordered_map<string, int> lbmap;
 vector<token> lex;
+char *numstr[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
+char *regstr[] = {"zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "k0", "k1", "gp", "sp", "s8", "ra", "lo", "hi", "pc"};
+char *assstr[] = {"align", "ascii", "asciiz", "byte", "half", "word", "space", "data", "text"};
+char *insstr[] = {"add", "addu", "addiu", "sub", "subu", "mul", "mulu", "div", "divu", "xor", "xoru", "neg", "negu", "rem", "remu", "li", "seq", "sge", "sgt", "sle", "slt", "sne", "b", "beq", "bne", "bge", "ble", "bgt", "blt", "beqz", "bnez", "blez", "bgez", "bgtz", "bltz", "j", "jr", "jal", "jalr", "la", "lb", "lh", "lw", "sb", "sh", "sw", "move", "mfhi", "mflo", "nop", "syscall"};
 void init()
 {
-	opmap["0"] = 0;
-	opmap["1"] = 1;
-	opmap["2"] = 2;
-	opmap["3"] = 3;
-	opmap["4"] = 4;
-	opmap["5"] = 5;
-	opmap["6"] = 6;
-	opmap["7"] = 7;
-	opmap["8"] = 8;
-	opmap["9"] = 9;
-	opmap["10"] = 10;
-	opmap["11"] = 11;
-	opmap["12"] = 12;
-	opmap["13"] = 13;
-	opmap["14"] = 14;
-	opmap["15"] = 15;
-	opmap["16"] = 16;
-	opmap["17"] = 17;
-	opmap["18"] = 18;
-	opmap["19"] = 19;
-	opmap["20"] = 20;
-	opmap["21"] = 21;
-	opmap["22"] = 22;
-	opmap["23"] = 23;
-	opmap["24"] = 24;
-	opmap["25"] = 25;
-	opmap["26"] = 26;
-	opmap["27"] = 27;
-	opmap["28"] = 28;
-	opmap["29"] = 29;
-	opmap["30"] = 30;
-	opmap["31"] = 31;
-
-	opmap["zero"] = 0;
-	opmap["at"] = 1;
-	opmap["v0"] = 2;
-	opmap["v1"] = 3;
-	opmap["a0"] = 4;
-	opmap["a1"] = 5;
-	opmap["a2"] = 6;
-	opmap["a3"] = 7;
-	opmap["t0"] = 8;
-	opmap["t1"] = 9;
-	opmap["t2"] = 10;
-	opmap["t3"] = 11;
-	opmap["t4"] = 12;
-	opmap["t5"] = 13;
-	opmap["t6"] = 14;
-	opmap["t7"] = 15;
-	opmap["t8"] = 16;
-	opmap["t9"] = 17;
-	opmap["s0"] = 18;
-	opmap["s1"] = 19;
-	opmap["s2"] = 20;
-	opmap["s3"] = 21;
-	opmap["s4"] = 22;
-	opmap["s5"] = 23;
-	opmap["s6"] = 24;
-	opmap["s7"] = 25;
-	opmap["k0"] = 26;
-	opmap["k1"] = 27;
-	opmap["gp"] = 28;
-	opmap["sp"] = 29;
-	opmap["s8"] = 30;
+	for (int i = 0; i < 32; ++i)
+	{
+		opmap[numstr[i]] = i;
+	}
+	for (int i = 0; i < 35; ++i)
+	{
+		opmap[regstr[i]] = i;
+	}
 	opmap["fp"] = 30;
-	opmap["ra"] = 31;
+	for (int i = 0; i < 9; ++i)
+	{
+		opmap[assstr[i]] = i + 1;
+	}
+	for (int i = 0; i < 51; ++i)
+	{
+		opmap[insstr[i]] = i + 1;
+	}
 
-	opmap["align"] = 1;
-	opmap["ascii"] = 2; 
-	opmap["asciiz"] = 3;
-	opmap["byte"] = 4;
-	opmap["half"] = 5;
-	opmap["word"] = 6;
-	opmap["space"] = 7;
-	opmap["data"] = 8;
-	opmap["text"] = 9;
+	insp[1] = ADD;
+	insp[2] = ADDU;
+	insp[3] = ADDIU;
+	insp[4] = SUB;
+	insp[5] = SUBU;
+	insp[6] = MUL;
+	insp[7] = MULU;
+	insp[8] = DIV;
+	insp[9] = DIVU;
+	insp[10] = XOR;
+	insp[11] = XORU;
+	insp[12] = NEG;
+	insp[13] = NEGU;
+	insp[14] = REM;
+	insp[15] = REMU;
+	insp[16] = LI;
+	insp[17] = SEQ;
+	insp[18] = SGE;
+	insp[19] = SGT;
+	insp[20] = SLE;
+	insp[21] = SLT;
+	insp[22] = SNE;
+	insp[23] = B;
+	insp[24] = BEQ;
+	insp[25] = BNE;
+	insp[26] = BGE;
+	insp[27] = BLE;
+	insp[28] = BGT;
+	insp[29] = BLT;
+	insp[30] = BEQZ;
+	insp[31] = BNEZ;
+	insp[32] = BLEZ;
+	insp[33] = BGEZ;
+	insp[34] = BGTZ;
+	insp[35] = BLTZ;
+	insp[36] = J;
+	insp[37] = JR;
+	insp[38] = JAL;
+	insp[39] = JALR;
+	insp[40] = LA;
+	insp[41] = LB;
+	insp[42] = LH;
+	insp[43] = LW;
+	insp[44] = SB;
+	insp[45] = SH;
+	insp[46] = SW;
+	insp[47] = MOVE;
+	insp[48] = MFHI;
+	insp[49] = MFLO;
+	insp[50] = NOP;
+	insp[51] = SYSCALL;
 
-	opmap["add"] = 1;
-	opmap["addu"] = 2;
-	opmap["addiu"] = 3;
-	opmap["sub"] = 4;
-	opmap["subu"] = 5;
-	opmap["mul"] = 6;
-	opmap["mulu"] = 7;
-	opmap["div"] = 8;
-	opmap["divu"] = 9;
-	opmap["xor"] = 10;
-	opmap["xoru"] = 11;
-	opmap["neg"] = 12;
-	opmap["negu"] = 13;
-	opmap["rem"] = 14;
-	opmap["remu"] = 15;
-	opmap["li"] = 16;
-	opmap["seq"] = 17;
-	opmap["sge"] = 18;
-	opmap["sgt"] = 19;
-	opmap["sle"] = 20;
-	opmap["slt"] = 21;
-	opmap["sne"] = 22;
-	opmap["b"] = 23;
-	opmap["beq"] = 24;
-	opmap["bne"] = 25;
-	opmap["bge"] = 26;
-	opmap["ble"] = 27;
-	opmap["bgt"] = 28;
-	opmap["blt"] = 29;
-	opmap["beqz"] = 30;
-	opmap["bnez"] = 31;
-	opmap["blez"] = 32;
-	opmap["bgez"] = 33;
-	opmap["bgtz"] = 34;
-	opmap["bltz"] = 35;
-	opmap["j"] = 36;
-	opmap["jr"] = 37;
-	opmap["jal"] = 38;
-	opmap["jalr"] = 39;
-	opmap["la"] = 40;
-	opmap["lb"] = 41;
-	opmap["lh"] = 42;
-	opmap["lw"] = 43;
-	opmap["sb"] = 44;
-	opmap["sh"] = 45;
-	opmap["sw"] = 46;
-	opmap["move"] = 47;
-	opmap["mfhi"] = 48;
-	opmap["mflo"] = 49;
-	opmap["nop"] = 50;
-	opmap["syscall"] = 51;
 }
 token gettxt(string &str, int &p, tid typ)
 {
@@ -199,6 +145,8 @@ token gettxt(string &str, int &p, tid typ)
 			case '\t':
 			case '\n':
 			case ',':
+				if (typ != litt) f = 0;
+				break;
 			case '\"':
 				f = 0;
 				break;
@@ -312,10 +260,10 @@ void appexpr(string &str)
 		}
 	}
 }
+int *cp;
 void eva(int &p)
 {
 	cout << '@' << p << ' ' << lex[p] << endl;
-	int &cp = data_p;
 	if (p > lex.size()) return;
 	switch (lex[p].type)
 	{
@@ -327,11 +275,9 @@ void eva(int &p)
 				{
 					int n = lex[++p].nval;
 					assert(lex[p].type == numt);
-					int t = 1;
-					for (int i = 0; i < n; ++i) t <<= 1;
-					int s = t;
-					while (s < p && s < M) s += t;
-					cp = s;
+					int t = 1 << n, s = t;
+					while (s < *cp && s < M) s += t;
+					*cp = s;
 					break;
 				}
 				case 2://.ascii
@@ -339,7 +285,7 @@ void eva(int &p)
 					string &v = lex[++p].sval;
 					for (int i = 0; i < v.length(); ++i)
 					{
-						data[cp++] = v[i];
+						data[(*cp)++] = v[i];
 					}
 					break;
 				}
@@ -348,16 +294,16 @@ void eva(int &p)
 					string &v = lex[++p].sval;
 					for (int i = 0; i < v.length(); ++i)
 					{
-						data[cp++] = v[i];
+						data[(*cp)++] = v[i];
 					}
-					data[cp++] = '\0';
+					data[(*cp)++] = '\0';
 					break;
 				}
 				case 4://.byte
 				{
 					while (lex[++p].type == numt)
 					{
-						data[cp++] = (byte)lex[p].nval;
+						data[(*cp)++] = (byte)lex[p].nval;
 					}
 					--p;
 					break;
@@ -366,17 +312,18 @@ void eva(int &p)
 				{
 					do
 					{
-						memcpy(data + cp, &lex[++p].nval, sizeof(half));
-						cp += sizeof(half);
-					}while (lex[p+1].type == numt);
+						memcpy(data + *cp, &lex[++p].nval, sizeof(half));
+						*cp += sizeof(half);
+					}
+					while (lex[p + 1].type == numt);
 					break;
 				}
 				case 6://.word
 				{
 					while (lex[++p].type == numt)
 					{
-						memcpy(data + cp, &lex[p].nval, sizeof(word));
-						cp += sizeof(word);
+						memcpy(data + *cp, &lex[p].nval, sizeof(word));
+						*cp += sizeof(word);
 					}
 					--p;
 					break;
@@ -385,34 +332,42 @@ void eva(int &p)
 				{
 					int n = lex[++p].nval;
 					assert(lex[p].type == numt);
-					memset(data + cp, 0, n * sizeof(byte));
+					memset(data + *cp, 0, n * sizeof(byte));
 					break;
 				}
 				case 8://.data
-					cp = data_p;
+					cp = &data_p;
+//					cout << "$.data:" << *cp << ' ' << data_p << endl;
 					break;
 				case 9://.text
-					cp = text_p;
+					cp = &text_p;
+//					cout << "$.text:" << *cp << ' ' << text_p << endl;
 					break;
 				default:
 					cout << "!eva asst " << lex[p] << endl;
 			}
 			++p;
+			cout << '%' << data_p << ' ' << text_p << endl;
 			break;
 		}
 		case opct:
 		{
-			assert(cp == text_p);
-			data[cp] = opmap[lex[p].sval];
-			int cnt = 0, rcnt = 0;
-			while (lex[++p].type != opct)
+//			cout<<"$opct:"<<*cp<<' '<<text_p<<endl;
+			assert(cp == &text_p);
+			data[*cp] = opmap[lex[p].sval];
+			int cnt = 0, rcnt = 0, f = 1;
+			while (f)
 			{
-				switch (lex[p].type)
+				switch (lex[++p].type)
 				{
+					case opct:
+					case asst:
+						f = 0;
+						break;
 					case numt:
 					{
-						data[cp + 2 + cnt * 3] = 0;
-						memcpy(data + cp + 3 + cnt * 3, &lex[p].nval, sizeof(half));
+						data[*cp + 2 + cnt * 3] = 1;
+						memcpy(data + *cp + 3 + cnt * 3, &lex[p].nval, sizeof(half));
 						++cnt;
 						break;
 					}
@@ -420,43 +375,45 @@ void eva(int &p)
 					{
 						if (rcnt)
 						{
-							data[cp + 2 + cnt * 3] = 1;
-							data[cp + 3 + cnt * 3] = opmap[lex[p].sval];
+							data[*cp + 2 + cnt * 3] = 2;
+							data[*cp + 3 + cnt * 3] = opmap[lex[p].sval];
 							++cnt;
 						}
 						else
 						{
-							data[cp + 1] = opmap[lex[p].sval];
+							data[*cp + 1] = opmap[lex[p].sval];
 							++rcnt;
 						}
 						break;
 					}
 					case labt:
 					{
-						memcpy(data + cp + 4, &lbmap[lex[p].sval], sizeof(word));
+						memcpy(data + *cp + 4, &lbmap[lex[p].sval], sizeof(word));
 						break;
 					}
 					case addt:
 					{
-						memcpy(data + cp + 6, &lex[p].nval, sizeof(half));
-						data[cp + 2] = 1;
-						data[cp + 3] = lbmap[lex[p].sval];
+						data[*cp + 5] = 1;
+						memcpy(data + *cp + 6, &lex[p].nval, sizeof(half));
+						data[*cp + 2] = 2;
+						data[*cp + 3] = lbmap[lex[p].sval];
 						break;
 					}
 					default:
 						cout << "!eva opt:" << lex[p] << endl;
 				}
 			}
-			cp += 8;
+			(*cp) += 8;
 			break;
 		}
 		case labt:
 		{
-			lbmap[lex[p++].sval] = cp;
+			lbmap[lex[p++].sval] = *cp;
 			break;
 		}
 		default:
 			cout << "!eva:" << lex[p] << endl;
+			exit(0);
 	}
 }
 void compile()
@@ -473,7 +430,7 @@ void compile()
 	cout << "lex:" << s << endl;
 	for (int i = 0; i < s; ++i)
 		cout << i << ':' << lex[i] << endl;
-	cout << "evaluation begin" << endl;
+	cout << "eva begin" << endl;
 	while (pos < s)
 	{
 		eva(pos);

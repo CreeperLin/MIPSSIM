@@ -6,12 +6,13 @@ int main()
 	freopen("my.out","w",stdout);
 	init();
 	string aspath, inpath, outpath;
-	aspath="1.s";
+	aspath="2.s";
 //	fin.open(inpath);
 //	fout.open(outpath);
 	fas.open(aspath);
 	assert(fas.is_open());
 	compile();
+	cout << "compiled!" << endl;
 //	run();
 //	fin.close();
 //	fout.close();
