@@ -1,21 +1,27 @@
 #include <bits/stdc++.h>
 #include "main.h"
 #include "assembler.cpp"
-int main()
+#include "mipsim.hpp"
+int main(int argc,char* argv[])
 {
-	freopen("my.out","w",stdout);
+	freopen("my.out", "w", stdout);
 	init();
 	string aspath, inpath, outpath;
-	aspath="2.s";
-//	fin.open(inpath);
-//	fout.open(outpath);
+	aspath = argv[1];
+	inpath = aspath + ".in";
+	outpath = aspath + ".ans";
+	aspath += ".s";
+	fin.open(inpath);
 	fas.open(aspath);
-	assert(fas.is_open());
+	fout.open(outpath);
+	assert(fas.is_open() && fin.is_open() && fout.is_open());
 	compile();
 	cout << "compiled!" << endl;
-//	run();
-//	fin.close();
-//	fout.close();
+
+	run();
+
+	fin.close();
+	fout.close();
 	return 0;
 }
 

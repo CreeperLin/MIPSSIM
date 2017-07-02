@@ -3,16 +3,10 @@
 #include "instruction.cpp"
 //#include <iostream>
 using namespace std;
-const int TEXT = 0x500;
-const int DATA = 0x15000;
-const byte RI = 1 << 7;
-const byte JI = 1 << 6;
-//const byte OI = 0;
-int text_p = TEXT;
-int data_p = DATA;
+
 enum tid
 {
-    asst, opct, regt, numt, litt, addt, labt
+    asst, opct, regt, numt, litt, addt, labt, lbdt
 };
 struct token
 {
@@ -46,6 +40,9 @@ struct token
 			case labt:
 				os << "labt";
 				break;
+			case lbdt:
+				os << "lbdt";
+				break;
 		}
 		os << ' ' << t.nval << ' ' << t.sval;
 		return os;
@@ -54,10 +51,7 @@ struct token
 unordered_map<string, byte> opmap;
 unordered_map<string, int> lbmap;
 vector<token> lex;
-char *numstr[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
-char *regstr[] = {"zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "k0", "k1", "gp", "sp", "s8", "ra", "lo", "hi", "pc"};
-char *assstr[] = {"align", "ascii", "asciiz", "byte", "half", "word", "space", "data", "text"};
-char *insstr[] = {"add", "addu", "addiu", "sub", "subu", "mul", "mulu", "div", "divu", "xor", "xoru", "neg", "negu", "rem", "remu", "li", "seq", "sge", "sgt", "sle", "slt", "sne", "b", "beq", "bne", "bge", "ble", "bgt", "blt", "beqz", "bnez", "blez", "bgez", "bgtz", "bltz", "j", "jr", "jal", "jalr", "la", "lb", "lh", "lw", "sb", "sh", "sw", "move", "mfhi", "mflo", "nop", "syscall"};
+
 void init()
 {
 	for (int i = 0; i < 32; ++i)
@@ -75,7 +69,9 @@ void init()
 	}
 	for (int i = 0; i < 51; ++i)
 	{
+//		opmap[insstr[i]] = (i + 1) | instyp[i];
 		opmap[insstr[i]] = i + 1;
+		cout << insstr[i] << ' ' << (int)opmap[insstr[i]] << endl;
 	}
 
 	insp[1] = ADD;
@@ -100,36 +96,78 @@ void init()
 	insp[20] = SLE;
 	insp[21] = SLT;
 	insp[22] = SNE;
-	insp[23] = B;
-	insp[24] = BEQ;
-	insp[25] = BNE;
-	insp[26] = BGE;
-	insp[27] = BLE;
-	insp[28] = BGT;
-	insp[29] = BLT;
-	insp[30] = BEQZ;
-	insp[31] = BNEZ;
-	insp[32] = BLEZ;
-	insp[33] = BGEZ;
-	insp[34] = BGTZ;
-	insp[35] = BLTZ;
-	insp[36] = J;
-	insp[37] = JR;
-	insp[38] = JAL;
-	insp[39] = JALR;
-	insp[40] = LA;
-	insp[41] = LB;
-	insp[42] = LH;
-	insp[43] = LW;
-	insp[44] = SB;
-	insp[45] = SH;
-	insp[46] = SW;
-	insp[47] = MOVE;
-	insp[48] = MFHI;
-	insp[49] = MFLO;
+	insp[23] = MOVE;
+	insp[24] = MFHI;
+	insp[25] = MFLO;
+
+	insp[26] = LA;
+	insp[27] = LB;
+	insp[28] = LH;
+	insp[29] = LW;
+	insp[30] = SB;
+	insp[31] = SH;
+	insp[32] = SW;
+
+	insp[33] = B;
+	insp[34] = BEQ;
+	insp[35] = BNE;
+	insp[36] = BGE;
+	insp[37] = BLE;
+	insp[38] = BGT;
+	insp[39] = BLT;
+	insp[40] = BEQZ;
+	insp[41] = BNEZ;
+	insp[42] = BLEZ;
+	insp[43] = BGEZ;
+	insp[44] = BGTZ;
+	insp[45] = BLTZ;
+	insp[46] = J;
+	insp[47] = JR;
+	insp[48] = JAL;
+	insp[49] = JALR;
+
 	insp[50] = NOP;
 	insp[51] = SYSCALL;
-
+}
+token getlit(string &str, int &p)
+{
+	token ret;
+	ret.type = litt;
+	string &v = ret.sval;
+	int len = str.length(), f = 1;
+	while(p < len && f)
+	{
+		switch (str[p])
+		{
+			case '\"':
+				f = 0;
+				break;
+			case '\\':
+			{
+				switch(str[++p])
+				{
+					case 'n':
+						v += '\n';
+						break;
+					case 't':
+						v += '\t';
+						break;
+					case '\\':
+					case '\'':
+					case '\"':
+						v += str[p];
+						break;
+					default:
+						cout << "!esc char.";
+				}
+				break;
+			}
+			default:
+				v += str[p];
+		}
+		++p;
+	}
+	return ret;
 }
 token gettxt(string &str, int &p, tid typ)
 {
@@ -145,7 +183,7 @@ token gettxt(string &str, int &p, tid typ)
 			case '\t':
 			case '\n':
 			case ',':
-				if (typ != litt) f = 0;
+				f = 0;
 				break;
 			case '\"':
 				f = 0;
@@ -172,21 +210,21 @@ token gettxt(string &str, int &p, tid typ)
 			}
 			case ':':
 				f = 0;
-				ret.type = labt;
+				ret.type = lbdt;
 				break;
 			default:
 				v += str[p];
 		}
 		++p;
 	}
-	if (typ == opct && !opmap[v]) ret.type = labt;
-	cout << "gettxt:" << ret << endl;
+	if (typ == opct && ret.type != lbdt && !opmap[v]) ret.type = labt;
+//	cout << "gettxt:" << ret << endl;
 	return ret;
 }
-token getnum(string &str, int &p, tid typ = numt)
+token getnum(string &str, int &p)
 {
 	token ret;
-	ret.type = typ;
+	ret.type = numt;
 	int s = 1, len = str.length(), &v = ret.nval;
 	if (str[p] == '-') s = -1, ++p;
 	int t = p;
@@ -210,7 +248,7 @@ token getnum(string &str, int &p, tid typ = numt)
 		}
 		++p;
 	}
-	cout << "getnum:" << ret << endl;
+//	cout << "getnum:" << ret << endl;
 	return ret;
 }
 void appexpr(string &str)
@@ -246,7 +284,7 @@ void appexpr(string &str)
 				lex.push_back(gettxt(str, ++p, regt));
 				break;
 			case '\"':
-				lex.push_back(gettxt(str, ++p, litt));
+				lex.push_back(getlit(str, ++p));
 				break;
 			case '\'':
 				lex.push_back(token(numt, (int)str[++p]));
@@ -261,6 +299,7 @@ void appexpr(string &str)
 	}
 }
 int *cp;
+int lbidx[1000], lblex[1000], lbcnt;
 void eva(int &p)
 {
 	cout << '@' << p << ' ' << lex[p] << endl;
@@ -352,9 +391,9 @@ void eva(int &p)
 		}
 		case opct:
 		{
-//			cout<<"$opct:"<<*cp<<' '<<text_p<<endl;
 			assert(cp == &text_p);
 			data[*cp] = opmap[lex[p].sval];
+			cout << "$opct:" << *cp << ' ' << (int)data[*cp] << endl;
 			int cnt = 0, rcnt = 0, f = 1;
 			while (f)
 			{
@@ -362,12 +401,13 @@ void eva(int &p)
 				{
 					case opct:
 					case asst:
+					case lbdt:
 						f = 0;
 						break;
 					case numt:
 					{
-						data[*cp + 2 + cnt * 3] = 1;
-						memcpy(data + *cp + 3 + cnt * 3, &lex[p].nval, sizeof(half));
+						data[*cp + 2 + cnt * 5] = 1;
+						memcpy(data + *cp + 3 + cnt * 5, &lex[p].nval, sizeof(word));
 						++cnt;
 						break;
 					}
@@ -375,8 +415,8 @@ void eva(int &p)
 					{
 						if (rcnt)
 						{
-							data[*cp + 2 + cnt * 3] = 2;
-							data[*cp + 3 + cnt * 3] = opmap[lex[p].sval];
+							data[*cp + 2 + cnt * 5] = 2;
+							data[*cp + 3 + cnt * 5] = opmap[lex[p].sval];
 							++cnt;
 						}
 						else
@@ -388,27 +428,37 @@ void eva(int &p)
 					}
 					case labt:
 					{
-						memcpy(data + *cp + 4, &lbmap[lex[p].sval], sizeof(word));
+						if (lbmap[lex[p].sval])
+						{
+							memcpy(data + *cp + 8, &lbmap[lex[p].sval], sizeof(word));
+						}
+						else
+						{
+							lbidx[lbcnt] = *cp;
+							lblex[lbcnt++] = p;
+							cout << "undefined label:" << lex[p].sval << '@' << *cp << endl;
+						}
 						break;
 					}
 					case addt:
 					{
-						data[*cp + 5] = 1;
-						memcpy(data + *cp + 6, &lex[p].nval, sizeof(half));
+						data[*cp + 7] = 1;
+						memcpy(data + *cp + 8, &lex[p].nval, sizeof(word));
 						data[*cp + 2] = 2;
-						data[*cp + 3] = lbmap[lex[p].sval];
+						data[*cp + 3] = opmap[lex[p].sval];
 						break;
 					}
 					default:
 						cout << "!eva opt:" << lex[p] << endl;
 				}
 			}
-			(*cp) += 8;
+			(*cp) += 12;
 			break;
 		}
-		case labt:
+		case lbdt:
 		{
 			lbmap[lex[p++].sval] = *cp;
+			cout << "label defined" << lex[p - 1].sval << '@' << *cp << endl;
 			break;
 		}
 		default:
@@ -435,4 +485,11 @@ void compile()
 	{
 		eva(pos);
 	}
+	for (int i = 0; i < lbcnt; ++i)
+	{
+		cout << "relabel:" << lbidx[i] << ' ' << lex[lblex[i]].sval << endl;
+		assert(lbmap[lex[lblex[i]].sval] != 0);
+		memcpy(data + lbidx[i] + 8, &lbmap[lex[lblex[i]].sval], sizeof(word));
+	}
+	mipsim(lbmap["main"]);
 }
