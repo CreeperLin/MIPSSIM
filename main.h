@@ -10,12 +10,11 @@ void (*insp[64])();
 byte data[M];
 
 const int TEXT = 0x500;
-const int DATA = 0x15000;
+const int DATA = 0x150000;
 int text_p = TEXT;
 int data_p = DATA;
 
-ifstream fas, fin;
-ofstream fout;
+ifstream fas;
 
 char numstr[][5] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
 char regstr[][10] = {"zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "k0", "k1", "gp", "sp", "s8", "ra", "lo", "hi", "pc"};

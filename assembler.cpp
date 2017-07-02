@@ -71,7 +71,7 @@ void init()
 	{
 //		opmap[insstr[i]] = (i + 1) | instyp[i];
 		opmap[insstr[i]] = i + 1;
-		cout << insstr[i] << ' ' << (int)opmap[insstr[i]] << endl;
+		//cerr << insstr[i] << ' ' << (int)opmap[insstr[i]] << endl;
 	}
 
 	insp[1] = ADD;
@@ -158,7 +158,7 @@ token getlit(string &str, int &p)
 						v += str[p];
 						break;
 					default:
-						cout << "!esc char.";
+						cerr << "!esc char.";
 				}
 				break;
 			}
@@ -204,7 +204,7 @@ token gettxt(string &str, int &p, tid typ)
 						v += str[p];
 						break;
 					default:
-						cout << "!esc char.";
+						cerr << "!esc char.";
 				}
 				break;
 			}
@@ -218,7 +218,7 @@ token gettxt(string &str, int &p, tid typ)
 		++p;
 	}
 	if (typ == opct && ret.type != lbdt && !opmap[v]) ret.type = labt;
-//	cout << "gettxt:" << ret << endl;
+//	//cerr << "gettxt:" << ret << endl;
 	return ret;
 }
 token getnum(string &str, int &p)
@@ -238,7 +238,7 @@ token getnum(string &str, int &p)
 	{
 		if (str[++p] != '$')
 		{
-			cout << "addr" << endl;
+			//cerr << "addr" << endl;
 			return ret;
 		}
 		ret.type = addt;
@@ -248,7 +248,7 @@ token getnum(string &str, int &p)
 		}
 		++p;
 	}
-//	cout << "getnum:" << ret << endl;
+//	//cerr << "getnum:" << ret << endl;
 	return ret;
 }
 void appexpr(string &str)
@@ -302,7 +302,7 @@ int *cp;
 int lbidx[1000], lblex[1000], lbcnt;
 void eva(int &p)
 {
-	cout << '@' << p << ' ' << lex[p] << endl;
+	//cerr << '@' << p << ' ' << lex[p] << endl;
 	if (p > lex.size()) return;
 	switch (lex[p].type)
 	{
@@ -376,24 +376,25 @@ void eva(int &p)
 				}
 				case 8://.data
 					cp = &data_p;
-//					cout << "$.data:" << *cp << ' ' << data_p << endl;
+//					//cerr << "$.data:" << *cp << ' ' << data_p << endl;
 					break;
 				case 9://.text
 					cp = &text_p;
-//					cout << "$.text:" << *cp << ' ' << text_p << endl;
+//					//cerr << "$.text:" << *cp << ' ' << text_p << endl;
 					break;
 				default:
-					cout << "!eva asst " << lex[p] << endl;
+//					cerr << "!eva asst " << lex[p] << endl;
+					exit(1);
 			}
 			++p;
-			cout << '%' << data_p << ' ' << text_p << endl;
+			//cerr << '%' << data_p << ' ' << text_p << endl;
 			break;
 		}
 		case opct:
 		{
 			assert(cp == &text_p);
 			data[*cp] = opmap[lex[p].sval];
-			cout << "$opct:" << *cp << ' ' << (int)data[*cp] << endl;
+			//cerr << "$opct:" << *cp << ' ' << (int)data[*cp] << endl;
 			int cnt = 0, rcnt = 0, f = 1;
 			while (f)
 			{
@@ -436,7 +437,7 @@ void eva(int &p)
 						{
 							lbidx[lbcnt] = *cp;
 							lblex[lbcnt++] = p;
-							cout << "undefined label:" << lex[p].sval << '@' << *cp << endl;
+							//cerr << "undefined label:" << lex[p].sval << '@' << *cp << endl;
 						}
 						break;
 					}
@@ -449,7 +450,8 @@ void eva(int &p)
 						break;
 					}
 					default:
-						cout << "!eva opt:" << lex[p] << endl;
+						//cerr << "!eva opt:" << lex[p] << endl;
+						exit(1);
 				}
 			}
 			(*cp) += 12;
@@ -458,12 +460,12 @@ void eva(int &p)
 		case lbdt:
 		{
 			lbmap[lex[p++].sval] = *cp;
-			cout << "label defined" << lex[p - 1].sval << '@' << *cp << endl;
+			//cerr << "label defined" << lex[p - 1].sval << '@' << *cp << endl;
 			break;
 		}
 		default:
-			cout << "!eva:" << lex[p] << endl;
-			exit(0);
+//			cerr << "!eva:" << lex[p] << endl;
+			exit(1);
 	}
 }
 void compile()
@@ -473,21 +475,21 @@ void compile()
 	while (!fas.eof())
 	{
 		getline(fas, str);
-		cout << '#' << i++ << ' ' << str << endl;
+		//cerr << '#' << i++ << ' ' << str << endl;
 		appexpr(str);
 	}
 	int pos = 0, s = lex.size();
-	cout << "lex:" << s << endl;
-	for (int i = 0; i < s; ++i)
-		cout << i << ':' << lex[i] << endl;
-	cout << "eva begin" << endl;
+	//cerr << "lex:" << s << endl;
+//	for (int i = 0; i < s; ++i)
+		//cerr << i << ':' << lex[i] << endl;
+	//cerr << "eva begin" << endl;
 	while (pos < s)
 	{
 		eva(pos);
 	}
 	for (int i = 0; i < lbcnt; ++i)
 	{
-		cout << "relabel:" << lbidx[i] << ' ' << lex[lblex[i]].sval << endl;
+		//cerr << "relabel:" << lbidx[i] << ' ' << lex[lblex[i]].sval << endl;
 		assert(lbmap[lex[lblex[i]].sval] != 0);
 		memcpy(data + lbidx[i] + 8, &lbmap[lex[lblex[i]].sval], sizeof(word));
 	}

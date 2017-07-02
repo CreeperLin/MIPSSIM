@@ -17,7 +17,7 @@ int maflg, masiz, maval, maddr;
 int retval;
 
 //public:
-mipsim(int mp)
+void mipsim(int mp)
 {
 	cpuclk = 0;
 	for (int i = 0; i < 32; ++i)
@@ -25,17 +25,17 @@ mipsim(int mp)
 		reg[i] = 0;
 	}
 	pc = mp;
-	sp = 1 << 21;
+	sp = M - (1 << 8);
 }
 
 
 unsigned char ins[15];
 void IF()
 {
-	//cout << "IF: ";
+	//cerr << "IF: ";
 	memcpy(ins, data + pc, 12);
-//	for (int i = 0; i < 12; ++i) //cout << (int)ins[i] << ' ';
-	//cout << endl;
+//	for (int i = 0; i < 12; ++i) //cerr << (int)ins[i] << ' ';
+	//cerr << endl;
 	pc += 12;
 }
 
@@ -44,11 +44,11 @@ int pr[3];
 
 void ID()
 {
-	//cout << "ID: ";
+	//cerr << "ID: ";
 	int op = ins[0];
 	if (op < 24)
 	{
-		//cout << "R:";
+		//cerr << "R:";
 		pr[0] = ins[1];
 		pr[1] = ins[7];
 		pd[0] = reg[ins[1]];
@@ -59,7 +59,7 @@ void ID()
 	else if (op == 25) pr[0] = ins[1], pd[1] = reg[32];
 	else if (op < 33)
 	{
-		//cout << "M:";
+		//cerr << "M:";
 		pr[0] = ins[1];
 		pd[0] = reg[ins[1]];
 		if (ins[2] == 2)
@@ -75,14 +75,14 @@ void ID()
 	}
 	else if (op < 50)
 	{
-		//cout << "J:";
+		//cerr << "J:";
 		pd[0] = reg[ins[1]];
 		pd[1] = (ins[2] == 1) ? (*reinterpret_cast<word*>(ins + 3)) : ((ins[2] == 2) ? reg[ins[3]] : 0);
 		pd[2] = *reinterpret_cast<word*>(ins + 8);
 	}
 	else if (op < 52)
 	{
-		//cout << "O:";
+		//cerr << "O:";
 		if (ins[0] == 51)
 		{
 			pd[0] = reg[2];
@@ -92,16 +92,16 @@ void ID()
 	}
 	else
 	{
-		//cout << '!' << endl;
+		//cerr << '!' << endl;
 		exit(1);
 	}
 
-	//cout << '\t' << pd[0] << ' ' << pd[1] << ' ' << pd[2] << endl;
+	//cerr << '\t' << pd[0] << ' ' << pd[1] << ' ' << pd[2] << endl;
 }
 
 void EX()
 {
-	//cout << "EX: " << (int)ins[0] << endl;
+	//cerr << "EX: " << (int)ins[0] << endl;
 	wbcnt = 0;
 	maflg = 0;
 	insp[ins[0]]();
@@ -109,50 +109,65 @@ void EX()
 
 void MA()
 {
-	//cout << "MA";
+	//cerr << "MA";
 	if (maflg == 1)
 	{
-		//cout << ": R:" << masiz << " reg:" << maval << " val:" << *reinterpret_cast<int*>(data + maddr) << " maddr:" << maddr;
+		//cerr << ": R:" << masiz << " reg:" << maval << " maddr:" << maddr;
 		wbreg[wbcnt] = maval;
-		wbval[wbcnt] = 0;
-		memcpy(wbval + wbcnt, data + maddr, masiz);
+		switch (masiz)
+		{
+			case 1:
+				wbval[wbcnt] = *reinterpret_cast<byte*>(data + maddr);
+				break;
+			case 2:
+				wbval[wbcnt] = *reinterpret_cast<half*>(data + maddr);
+				break;
+			case 4:
+				wbval[wbcnt] = *reinterpret_cast<word*>(data + maddr);
+				break;
+			default:
+				exit(2);
+		}
+		//cerr << " val:" << wbval[wbcnt];
 		++wbcnt;
+//		wbval[wbcnt] = 0;
+//		memcpy(wbval + wbcnt, data + maddr, masiz);
 	}
 	else if (maflg == 2)
 	{
-		//cout << ": W:" << masiz << " val:" << maval << " maddr:" << maddr;
+		//cerr << ": W:" << masiz << " val:" << maval << " maddr:" << maddr;
 		memcpy(data + maddr, &maval, masiz);
 	}
-	//cout << endl;
+	//cerr << endl;
 }
 void WB()
 {
-	//cout << "WB";
+	//cerr << "WB";
 	for (int i = 0; i < wbcnt; ++i)
 	{
-		//cout << ": reg:" << wbreg[i] << " val:" << wbval[i];
+		//cerr << ": reg:" << wbreg[i] << " val:" << wbval[i];
 		reg[wbreg[i]] = wbval[i];
 	}
-	//cout << endl;
+	//cerr << endl;
 }
 
 void halt()
 {
-	//cout << "simulation halt" << endl;
+	cerr << "simulation halt: cpuclk:" << cpuclk << endl;
 }
 
 int run()
 {
-	//cout << "simulation start" << endl;
+	cerr << "simulation start" << endl;
 	while (pc)
 	{
-		//cout << '>' << cpuclk << " pc:" << reg[34] << ' ' << insstr[data[pc] - 1] << '{' << endl;
+		//cerr << '>' << cpuclk << " pc:" << reg[34] << ' ' << insstr[data[pc] - 1] << '{' << endl;
 		IF();
 		ID();
 		EX();
 		MA();
 		WB();
-		//cout << '}' << endl;
+		//cerr << '}' << endl;
 		++cpuclk;
 	}
 	halt();
