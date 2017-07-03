@@ -468,7 +468,7 @@ void eva(int &p)
 			exit(1);
 	}
 }
-void compile()
+int compile()
 {
 	string str;
 	int i = 1;
@@ -493,5 +493,5 @@ void compile()
 		assert(lbmap[lex[lblex[i]].sval] != 0);
 		memcpy(data + lbidx[i] + 8, &lbmap[lex[lblex[i]].sval], sizeof(word));
 	}
-	mipsim(lbmap["main"]);
+	return lbmap["main"];
 }

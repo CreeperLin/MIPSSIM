@@ -2,327 +2,368 @@
 #define _INST_H
 #include <iostream>
 #include "mipsim.hpp"
-#define GOTO(x) wbreg[wbcnt]=34,wbval[wbcnt++]=x;
-void ADD()
+#define GOTO(x) ret[1] = ret[0] = 1,ret[2] = 34, ret[3] = x;
+void ADD(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[1] + pd[2];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[1] + pd[2];
 }
-void ADDU()
+void ADDU(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (unsigned)(pd[1] + pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (unsigned)(pd[1] + pd[2]);
 }
-void ADDIU()
+void ADDIU(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (unsigned)(pd[1] + pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (unsigned)(pd[1] + pd[2]);
 }
-void SUB()
+void SUB(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[1] - pd[2];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[1] - pd[2];
 }
-void SUBU()
+void SUBU(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (unsigned)(pd[1] - pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (unsigned)(pd[1] - pd[2]);
 }
-void MUL()
+void MUL(int *ret, long long *pd)
 {
-	if (pr[1])
+	ret[0] = 1;
+	if (pd[4])
 	{
-		wbreg[wbcnt] = pr[0];
-		wbval[wbcnt++] = pd[1] * pd[2];
+		ret[1] = 1;
+		ret[2] = pd[3];
+		ret[3] = pd[1] * pd[2];
+	}
+	else
+	{
+		ret[1] = 2;
+		unsigned long long t = pd[0] * pd[1];
+		ret[2] = 33;
+		ret[3] = t >> 32;
+		ret[4] = 32;
+		ret[5] = t & ((1LL << 32) - 1);
+	}
+}
+void MULU(int *ret, long long *pd)
+{
+	ret[0] = 1;
+	if (pd[4])
+	{
+		ret[1] = 1;
+		ret[2] = pd[3];
+		ret[3] = (unsigned)(pd[1] * pd[2]);
 	}
 	else
 	{
 		unsigned long long t = pd[0] * pd[1];
-		wbreg[wbcnt] = 33;
-		wbval[wbcnt++] = t >> 32;
-		wbreg[wbcnt] = 32;
-		wbval[wbcnt++] = t & ((1LL << 32) - 1);
+		ret[1] = 2;
+		ret[2] = 33;
+		ret[3] = t >> 32;
+		ret[4] = 32;
+		ret[5] = t & ((1LL << 32) - 1);
 	}
 }
-void MULU()
+void DIVU(int *ret, long long *pd)
 {
-	if (pr[1])
+	ret[0] = 1;
+	if (pd[4])
 	{
-		wbreg[wbcnt] = pr[0];
-		wbval[wbcnt++] = (unsigned)(pd[1] * pd[2]);
+		ret[1] = 1;
+		ret[2] = pd[3];
+		ret[3] = (unsigned)(pd[1] / pd[2]);
 	}
 	else
 	{
-		unsigned long long t = pd[0] * pd[1];
-		wbreg[wbcnt] = 33;
-		wbval[wbcnt++] = t >> 32;
-		wbreg[wbcnt] = 32;
-		wbval[wbcnt++] = t & ((1LL << 32) - 1);
+		ret[1] = 2;
+		ret[2] = 33;
+		ret[3] = (unsigned)(pd[0] % pd[1]);
+		ret[4] = 32;
+		ret[5] = (unsigned)(pd[0] / pd[1]);
 	}
 }
-void DIVU()
+void DIV(int *ret, long long *pd)
 {
-	if (pr[1])
+	ret[0] = 1;
+	if (pd[4])
 	{
-		wbreg[wbcnt] = pr[0];
-		wbval[wbcnt++] = (unsigned)(pd[1] / pd[2]);
+		ret[1] = 1;
+		ret[2] = pd[3];
+		ret[3] = pd[1] / pd[2];
 	}
 	else
 	{
-		wbreg[wbcnt] = 33;
-		wbval[wbcnt++] = (unsigned)(pd[0] % pd[1]);
-		wbreg[wbcnt] = 32;
-		wbval[wbcnt++] = (unsigned)(pd[0] / pd[1]);
+		ret[1] = 2;
+		ret[2] = 33;
+		ret[3] = pd[0] % pd[1];
+		ret[4] = 32;
+		ret[5] = pd[0] / pd[1];
 	}
 }
-void DIV()
+void XOR(int *ret, long long *pd)
 {
-	if (pr[1])
-	{
-		wbreg[wbcnt] = pr[0];
-		wbval[wbcnt++] = pd[1] / pd[2];
-	}
-	else
-	{
-		wbreg[wbcnt] = 33;
-		wbval[wbcnt++] = pd[0] % pd[1];
-		wbreg[wbcnt] = 32;
-		wbval[wbcnt++] = pd[0] / pd[1];
-	}
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[1] ^ pd[2];
 }
-void XOR()
+void XORU(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[1] ^ pd[2];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (unsigned)(pd[1] ^ pd[2]);
 }
-void XORU()
+void NEG(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (unsigned)(pd[1] ^ pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = -pd[1];
 }
-void NEG()
+void NEGU(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = -pd[1];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (unsigned)(-pd[1]);
 }
-void NEGU()
+void REM(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (unsigned)(-pd[1]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[1] % pd[2];
 }
-void REM()
+void REMU(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[1] % pd[2];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (unsigned)(pd[1] % pd[2]);
 }
-void REMU()
+void LI(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (unsigned)(pd[1] % pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[1];
 }
-void LI()
+void SEQ(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[1];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (pd[1] == pd[2]);
 }
-void SEQ()
+void SGE(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (pd[1] == pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (pd[1] >= pd[2]);
 }
-void SGE()
+void SGT(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (pd[1] >= pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (pd[1] > pd[2]);
 }
-void SGT()
+void SLE(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (pd[1] > pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (pd[1] <= pd[2]);
 }
-void SLE()
+void SLT(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (pd[1] <= pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (pd[1] < pd[2]);
 }
-void SLT()
+void SNE(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (pd[1] < pd[2]);
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = (pd[1] != pd[2]);
 }
-void SNE()
-{
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = (pd[1] != pd[2]);
-}
-void B()
+void B(int *ret, long long *pd)
 {
 	GOTO(pd[2]);
 }
-void BEQ()
+void BEQ(int *ret, long long *pd)
 {
 	if (pd[0] == pd[1]) GOTO(pd[2]);
 }
-void BNE()
+void BNE(int *ret, long long *pd)
 {
 	if (pd[0] != pd[1]) GOTO(pd[2]);
 }
-void BGE()
+void BGE(int *ret, long long *pd)
 {
 	if (pd[0] >= pd[1]) GOTO(pd[2]);
 }
-void BLE()
+void BLE(int *ret, long long *pd)
 {
 	if (pd[0] <= pd[1]) GOTO(pd[2]);
 }
-void BGT()
+void BGT(int *ret, long long *pd)
 {
 	if (pd[0] > pd[1]) GOTO(pd[2]);
 }
-void BLT()
+void BLT(int *ret, long long *pd)
 {
 	if (pd[0] < pd[1]) GOTO(pd[2]);
 }
-void BEQZ()
+void BEQZ(int *ret, long long *pd)
 {
 	if (pd[0] == 0) GOTO(pd[2]);
 }
-void BNEZ()
+void BNEZ(int *ret, long long *pd)
 {
 	if (pd[0] != 0) GOTO(pd[2]);
 }
-void BGEZ()
+void BGEZ(int *ret, long long *pd)
 {
 	if (pd[0] >= 0) GOTO(pd[2]);
 }
-void BLEZ()
+void BLEZ(int *ret, long long *pd)
 {
 	if (pd[0] <= 0) GOTO(pd[2]);
 }
-void BGTZ()
+void BGTZ(int *ret, long long *pd)
 {
 	if (pd[0] > 0) GOTO(pd[2]);
 }
-void BLTZ()
+void BLTZ(int *ret, long long *pd)
 {
 	if (pd[0] < 0) GOTO(pd[2]);
 }
-void J()
+void J(int *ret, long long *pd)
 {
 	GOTO(pd[2]);
 }
-void JR()
+void JR(int *ret, long long *pd)
 {
 	GOTO(pd[0]);
 }
-void JAL()
+void JAL(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = 31;
-	wbval[wbcnt++] = pc;
-	GOTO(pd[2]);
+	ret[0] = 1;
+	ret[1] = 2;
+	ret[2] = 31;
+	ret[3] = pd[1];
+	ret[4] = 34;
+	ret[5] = pd[2];
 }
-void JALR()
+void JALR(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = 31;
-	wbval[wbcnt++] = pc;
-	GOTO(pd[2]);
+	ret[0] = 1;
+	ret[1] = 2;
+	ret[2] = 31;
+	ret[3] = pd[1];
+	ret[4] = 34;
+	ret[5] = pd[0];
 }
-void LA()
+void LA(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[2] + pd[1];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[2] + pd[1];
 }
-void LB()
+void LB(int *ret, long long *pd)
 {
-	maflg = 1;
-	maval = pr[0];
-	maddr = pd[2] + pd[1];
-	masiz = sizeof(byte);
+	ret[0] = 2;
+	ret[2] = pd[2] + pd[1];
+	ret[3] = pd[3];
+	ret[4] = sizeof(byte);
 }
-void LH()
+void LH(int *ret, long long *pd)
 {
-	maflg = 1;
-	maval = pr[0];
-	maddr = pd[2] + pd[1];
-	masiz = sizeof(half);
+	ret[0] = 2;
+	ret[2] = pd[2] + pd[1];
+	ret[3] = pd[3];
+	ret[4] = sizeof(half);
 }
-void LW()
+void LW(int *ret, long long *pd)
 {
-	maflg = 1;
-	maval = pr[0];
-	maddr = pd[2] + pd[1];
-	masiz = sizeof(word);
+	ret[0] = 2;
+	ret[2] = pd[2] + pd[1];
+	ret[3] = pd[3];
+	ret[4] = sizeof(word);
 }
-void SB()
+void SB(int *ret, long long *pd)
 {
-	maflg = 2;
-	maddr = pd[2] + pd[1];
-	maval = pd[0];
-	masiz = sizeof(byte);
+	ret[0] = 3;
+	ret[2] = pd[2] + pd[1];
+	ret[3] = pd[0];
+	ret[4] = sizeof(byte);
 }
-void SH()
+void SH(int *ret, long long *pd)
 {
-	maflg = 2;
-	maddr = pd[2] + pd[1];
-	maval = pd[0];
-	masiz = sizeof(half);
+	ret[0] = 3;
+	ret[2] = pd[2] + pd[1];
+	ret[3] = pd[0];
+	ret[4] = sizeof(half);
 }
-void SW()
+void SW(int *ret, long long *pd)
 {
-	maflg = 2;
-	maddr = pd[2] + pd[1];
-	maval = pd[0];
-	masiz = sizeof(word);
+	ret[0] = 3;
+	ret[2] = pd[2] + pd[1];
+	ret[3] = pd[0];
+	ret[4] = sizeof(word);
 }
-void MOVE()
+void MOVE(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[1];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[1];
 }
-void MFHI()
+void MFHI(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[1];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[1];
 }
-void MFLO()
+void MFLO(int *ret, long long *pd)
 {
-	wbreg[wbcnt] = pr[0];
-	wbval[wbcnt++] = pd[1];
+	ret[1] = ret[0] = 1;
+	ret[2] = pd[3];
+	ret[3] = pd[1];
 }
-void NOP()
+void NOP(int *ret, long long *pd)
 {
 	return;
 }
-void SYSCALL()
+void SYSCALL(int *ret, long long *pd)
 {
 	switch (pd[0])
 	{
 		case 1:
 		{
 			cerr << "###SIMOUT:" << pd[1] << endl;
-			cout << pd[1];
+			fout << pd[1];
 			break;
 		}
 		case 4:
 		{
 			cerr << "###SIMOUT:" << (data + pd[1]) << endl;
-			cout << (data + pd[1]);
+			fout << (data + pd[1]);
 			break;
 		}
 		case 5:
 		{
-			wbreg[wbcnt] = 2;
-			cin >> wbval[wbcnt++];
-			cerr << "###SIMIN:" << wbval[wbcnt - 1] << endl;
+			ret[1] = ret[0] = 1;
+			ret[2] = 2;
+			fin >> ret[3];
+			cerr << "###SIMIN:" << ret[3] << endl;
 			break;
 		}
 		case 8:
 		{
-			int i = 0;
-			char ch = 0;
+//			int i = 0;
+//			char ch = 0;
 //			cin.get(data + pd[1], pd[2]);
-			cin >> (data + pd[1]);
-//			for(; !cin.eof()&&; ++i)
+			fin >> (data + pd[1]);
+//			for(; !cin.eof(int *ret, long long *pd)&&; ++i)
 //			{
 //				cin.get(ch);
 //				if (ch == '\n') break;
@@ -344,19 +385,22 @@ void SYSCALL()
 			int np = data_p + 100, t = 1 << 2, s = t;
 			while (s < np && s < M) s += t;
 			data_p = s + pd[1];
-			wbreg[wbcnt] = 2;
-			wbval[wbcnt++] = s;
+			ret[1] = ret[0] = 1;
+			ret[2] = 2;
+			ret[3] = s;
 			break;
 		}
 		case 10:
 			cerr << "###SIMTERMINATE" << endl;
-			wbreg[wbcnt] = 34;
-			wbval[wbcnt++] = 0;
+			ret[1] = ret[0] = 1;
+			ret[2] = 34;
+			ret[3] = 0;
 			break;
 		case 17:
 			cerr << "###SIMTERMINATE:" << pd[1] << endl;
-			wbreg[wbcnt] = 34;
-			wbval[wbcnt++] = 0;
+			ret[1] = ret[0] = 1;
+			ret[2] = 34;
+			ret[3] = 0;
 			break;
 		default:
 			cerr << "!sys" << endl;
