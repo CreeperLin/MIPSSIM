@@ -12,6 +12,7 @@ long long cpuclk;
 
 //public:
 
+int hz_ctl;
 void IF(unsigned char *ins, long long &pc)
 {
 	cerra << "IF: ";
@@ -21,9 +22,7 @@ void IF(unsigned char *ins, long long &pc)
 	pc += 12;
 }
 
-
-
-void ID(long long *pd, unsigned char* ins, long long *reg)
+void ID(long long *pd, unsigned char* ins, long long *reg, int wcnt, int *wreg, int *wval)
 {
 	cerra << "ID: ";
 	int op = ins[0];
@@ -31,6 +30,14 @@ void ID(long long *pd, unsigned char* ins, long long *reg)
 	{
 		cerra << "R:";
 		pd[0] = reg[ins[1]];
+		if (ins[2] == 2)
+		{
+			if (ins[3]==wreg[wcnt])
+			{
+				
+			}
+		}
+//		(ins[2]) ? (ins[2] == 1) ? (*reinterpret_cast<word*>(ins + 3)) : reg[ins[3]]
 		pd[1] = (ins[2] == 1) ? (*reinterpret_cast<word*>(ins + 3)) : ((ins[2] == 2) ? reg[ins[3]] : 0);
 		pd[2] = (ins[7] == 1) ? (*reinterpret_cast<word*>(ins + 8)) : ((ins[7] == 2) ? reg[ins[8]] : 0);
 		pd[3] = ins[1];
@@ -42,7 +49,7 @@ void ID(long long *pd, unsigned char* ins, long long *reg)
 	{
 		cerra << "M:";
 		pd[0] = reg[ins[1]];
-		pd[1] = (ins[2] == 2) ? reg[ins[3]] : 0;
+		pd[1] = (ins[2] == 2) ? ()reg[ins[3]] : 0;
 		pd[2] = *reinterpret_cast<word*>(ins + 8);
 		pd[3] = ins[1];
 	}
@@ -74,11 +81,15 @@ void ID(long long *pd, unsigned char* ins, long long *reg)
 
 void EX(int *ret, int op, long long *pa)
 {
-	cerra << "EX: " << op << endl;
+	cerra << "EX: " << insstr[op - 1] << endl;
 	ret[0] = ret[1] = 0;
 	if (op)
 	{
 		insp[op](ret, pa);
+	}
+	if ((op > 32 && op < 50 ) || op == 51)
+	{
+		hz_ctl = 0;
 	}
 }
 
@@ -141,20 +152,26 @@ void run(int mp)
 	sp = M - (1 << 8);
 	cerr << "simulation start" << endl;
 
+	int op;
 	unsigned char ins[15];
 	long long pd[6];
 	int ret[10];
 	int mret[5];
-
 	int wbcnt = 0, wbreg[5], wbval[5];
+
 	while (pc)
 	{
 		cerra << '>' << cpuclk << " pc:" << pc << ' ' << insstr[data[pc] - 1] << '{' << endl;
-		IF(ins, pc);
 
-		ID(pd, ins, reg);
-
-		int op = ins[0];
+		WB(wbcnt, wbreg, wbval, reg);
+		MA(mret, ret);
+		if (mret[0])
+		{
+			assert(wbcnt == 0);
+			wbreg[0] = mret[1];
+			wbval[0] = mret[2];
+			wbcnt = 1;
+		}
 		EX(ret, op, pd);
 		if (ret[0] == 1)
 		{
@@ -169,14 +186,54 @@ void run(int mp)
 				wbcnt = 2;
 			}
 		}
-		MA(mret, ret);
-		if (mret[0])
+
+		ID(pd, ins, reg, wbcnt, wbreg, wbval);
+
+		op = ins[0];
+		ins[0] = 0;
+		if ((op > 32 && op < 50) || op == 51)
 		{
-			wbreg[0] = mret[1];
-			wbval[0] = mret[2];
-			wbcnt = 1;
+			if (op == 33 || op > 45)
+			{
+				//stall
+				hz_ctl = 1;
+			}
+			else
+			{
+				//branch predict
+				hz_ctl = 1;
+			}
 		}
-		WB(wbcnt, wbreg, wbval, reg);
+		if (!hz_ctl)
+		{
+			IF(ins, pc);
+		}
+
+//		IF(ins, pc);
+//		ID(pd, ins, reg);
+//		int op = ins[0];
+//		EX(ret, op, pd);
+//		if (ret[0] == 1)
+//		{
+//			assert(wbcnt == 0);
+//			wbreg[0] = ret[2];
+//			wbval[0] = ret[3];
+//			wbcnt = 1;
+//			if (ret[1] == 2)
+//			{
+//				wbreg[1] = ret[4];
+//				wbval[1] = ret[5];
+//				wbcnt = 2;
+//			}
+//		}
+//		MA(mret, ret);
+//		if (mret[0])
+//		{
+//			wbreg[0] = mret[1];
+//			wbval[0] = mret[2];
+//			wbcnt = 1;
+//		}
+//		WB(wbcnt, wbreg, wbval, reg);
 		cerra << '}' << endl;
 		++cpuclk;
 	}

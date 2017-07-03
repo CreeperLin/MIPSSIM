@@ -362,6 +362,10 @@ void SYSCALL(int *ret, long long *pd)
 //			int i = 0;
 //			char ch = 0;
 //			cin.get(data + pd[1], pd[2]);
+//			string str;
+//			fin >> str;
+//			str.substr(0, pd[2] - 1);
+//			memcpy(data+pd[1],str.c_str(),str.length());
 			fin >> (data + pd[1]);
 //			for(; !cin.eof(int *ret, long long *pd)&&; ++i)
 //			{
@@ -371,12 +375,6 @@ void SYSCALL(int *ret, long long *pd)
 //			}
 //			data[pd[1] + i] = '\0';
 			cerr << "###SIMGETSTR:" << (data + pd[1]) << endl;
-//			for (int i = pd[1];; ++i)
-//			{
-//				//cerr << '@' << i << ':' << data[i] << ' ';
-//				if (!data[i]) break;
-//			}
-			//cerr << endl;
 			break;
 		}
 		case 9:

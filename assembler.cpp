@@ -299,7 +299,7 @@ void appexpr(string &str)
 	}
 }
 int *cp;
-int lbidx[1000], lblex[1000], lbcnt;
+int lbidx[10000], lblex[10000], lbcnt;
 void eva(int &p)
 {
 	//cerr << '@' << p << ' ' << lex[p] << endl;
