@@ -49,7 +49,7 @@ void ID(long long *pd, unsigned char* ins, long long *reg, int wcnt, int *wreg, 
 	{
 		cerra << "M:";
 		pd[0] = reg[ins[1]];
-		pd[1] = (ins[2] == 2) ? ()reg[ins[3]] : 0;
+		pd[1] = (ins[2] == 2) ? reg[ins[3]] : 0;
 		pd[2] = *reinterpret_cast<word*>(ins + 8);
 		pd[3] = ins[1];
 	}

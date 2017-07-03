@@ -380,12 +380,12 @@ void SYSCALL(int *ret, long long *pd)
 		case 9:
 		{
 			cerr << "###SIMALLOCATE" << endl;
-			int np = data_p + 100, t = 1 << 2, s = t;
-			while (s < np && s < M) s += t;
-			data_p = s + pd[1];
+			int np = data_p + 100;
+			np = ((np - 1) / 4 + 1) * 4;
+			data_p = np + pd[1];
 			ret[1] = ret[0] = 1;
 			ret[2] = 2;
-			ret[3] = s;
+			ret[3] = np;
 			break;
 		}
 		case 10:

@@ -9,7 +9,7 @@ typedef int word;
 void (*insp[64])(int *ret, long long *pd);
 byte data[M];
 
-#define DEBUG 1
+#define DEBUG 0
 const int TEXT = 0x500;
 const int DATA = 0x150000;
 int text_p = TEXT;
