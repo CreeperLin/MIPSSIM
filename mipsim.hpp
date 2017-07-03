@@ -3,6 +3,7 @@
 #include <bits/stdc++.h>
 #include "main.h"
 using namespace std;
+#define cerra if(DEBUG) cerr
 
 //class mipsim
 //{
@@ -13,10 +14,10 @@ long long cpuclk;
 
 void IF(unsigned char *ins, long long &pc)
 {
-	cerr << "IF: ";
+	cerra << "IF: ";
 	memcpy(ins, data + pc, 12);
-	for (int i = 0; i < 12; ++i) cerr << (int)ins[i] << ' ';
-	cerr << endl;
+	for (int i = 0; i < 12; ++i) cerra << (int)ins[i] << ' ';
+	cerra << endl;
 	pc += 12;
 }
 
@@ -24,11 +25,11 @@ void IF(unsigned char *ins, long long &pc)
 
 void ID(long long *pd, unsigned char* ins, long long *reg)
 {
-	cerr << "ID: ";
+	cerra << "ID: ";
 	int op = ins[0];
 	if (op < 24)
 	{
-		cerr << "R:";
+		cerra << "R:";
 		pd[0] = reg[ins[1]];
 		pd[1] = (ins[2] == 1) ? (*reinterpret_cast<word*>(ins + 3)) : ((ins[2] == 2) ? reg[ins[3]] : 0);
 		pd[2] = (ins[7] == 1) ? (*reinterpret_cast<word*>(ins + 8)) : ((ins[7] == 2) ? reg[ins[8]] : 0);
@@ -39,7 +40,7 @@ void ID(long long *pd, unsigned char* ins, long long *reg)
 	else if (op == 25) pd[3] = ins[1], pd[1] = reg[32];
 	else if (op < 33)
 	{
-		cerr << "M:";
+		cerra << "M:";
 		pd[0] = reg[ins[1]];
 		pd[1] = (ins[2] == 2) ? reg[ins[3]] : 0;
 		pd[2] = *reinterpret_cast<word*>(ins + 8);
@@ -47,14 +48,14 @@ void ID(long long *pd, unsigned char* ins, long long *reg)
 	}
 	else if (op < 50)
 	{
-		cerr << "J:";
+		cerra << "J:";
 		pd[0] = reg[ins[1]];
 		pd[1] = (ins[2] == 1) ? (*reinterpret_cast<word*>(ins + 3)) : ((ins[2] == 2) ? reg[ins[3]] : reg[34]);
 		pd[2] = *reinterpret_cast<word*>(ins + 8);
 	}
 	else if (op < 52)
 	{
-		cerr << "O:";
+		cerra << "O:";
 		if (ins[0] == 51)
 		{
 			pd[0] = reg[2];
@@ -64,16 +65,16 @@ void ID(long long *pd, unsigned char* ins, long long *reg)
 	}
 	else
 	{
-		cerr << '!' << endl;
+		cerra << '!' << endl;
 		exit(1);
 	}
-	cerr << '\t' << pd[0] << ' ' << pd[1] << ' ' << pd[2] << endl;
+	cerra << '\t' << pd[0] << ' ' << pd[1] << ' ' << pd[2] << endl;
 //	return op;
 }
 
 void EX(int *ret, int op, long long *pa)
 {
-	cerr << "EX: " << op << endl;
+	cerra << "EX: " << op << endl;
 	ret[0] = ret[1] = 0;
 	if (op)
 	{
@@ -83,11 +84,11 @@ void EX(int *ret, int op, long long *pa)
 
 void MA(int *ret, int *pa)
 {
-	cerr << "MA";
+	cerra << "MA";
 	ret[0] = 0;
 	if (pa[0] == 2)
 	{
-		cerr << ": R:" << pa[4] << " reg:" << pa[3] << " maddr:" << pa[2];
+		cerra << ": R:" << pa[4] << " reg:" << pa[3] << " maddr:" << pa[2];
 		ret[0] = 1;
 		ret[1] = pa[3];
 		switch (pa[4])
@@ -104,27 +105,27 @@ void MA(int *ret, int *pa)
 			default:
 				exit(2);
 		}
-		cerr << " val:" << ret[2];
+		cerra << " val:" << ret[2];
 //		wbval[wbcnt] = 0;
 //		memcpy(wbval + wbcnt, data + maddr, masiz);
 	}
 	else if (pa[0] == 3)
 	{
-		cerr << ": W:" << pa[4] << " val:" << pa[3] << " maddr:" << pa[2];
+		cerra << ": W:" << pa[4] << " val:" << pa[3] << " maddr:" << pa[2];
 		memcpy(data + pa[2], pa + 3, pa[4]);
 	}
-	cerr << endl;
+	cerra << endl;
 }
 void WB(int &wbcnt, int *wbreg, int *wbval, long long *reg)
 {
-	cerr << "WB";
+	cerra << "WB";
 	for (int i = 0; i < wbcnt; ++i)
 	{
-		cerr << ": reg:" << wbreg[i] << " val:" << wbval[i];
+		cerra << ": reg:" << wbreg[i] << " val:" << wbval[i];
 		reg[wbreg[i]] = wbval[i];
 	}
 	wbcnt = 0;
-	cerr << endl;
+	cerra << endl;
 }
 void halt()
 {
@@ -134,12 +135,8 @@ void halt()
 void run(int mp)
 {
 	cpuclk = 0;
-	long long reg[35];
+	long long reg[35] = {0};
 	long long &pc = reg[34], &sp = reg[29];
-	for (int i = 0; i < 35; ++i)
-	{
-		reg[i] = 0;
-	}
 	pc = mp;
 	sp = M - (1 << 8);
 	cerr << "simulation start" << endl;
@@ -149,35 +146,38 @@ void run(int mp)
 	int ret[10];
 	int mret[5];
 
-	int wbcnt, wbreg[5], wbval[5];
+	int wbcnt = 0, wbreg[5], wbval[5];
 	while (pc)
 	{
-		cerr << '>' << cpuclk << " pc:" << pc << ' ' << insstr[data[pc] - 1] << '{' << endl;
+		cerra << '>' << cpuclk << " pc:" << pc << ' ' << insstr[data[pc] - 1] << '{' << endl;
 		IF(ins, pc);
 
 		ID(pd, ins, reg);
 
 		int op = ins[0];
 		EX(ret, op, pd);
-		if (ret[0]==1)
+		if (ret[0] == 1)
 		{
-			assert(wbcnt==0);
-			wbreg[wbcnt] = ret[2];
-			wbval[wbcnt++] = ret[3];
-			if (ret[1]==2)
+			assert(wbcnt == 0);
+			wbreg[0] = ret[2];
+			wbval[0] = ret[3];
+			wbcnt = 1;
+			if (ret[1] == 2)
 			{
-				wbreg[wbcnt] = ret[4];
-				wbval[wbcnt++] = ret[5];
+				wbreg[1] = ret[4];
+				wbval[1] = ret[5];
+				wbcnt = 2;
 			}
 		}
 		MA(mret, ret);
 		if (mret[0])
 		{
-			wbreg[wbcnt] = mret[1];
-			wbval[wbcnt++] = mret[2];
+			wbreg[0] = mret[1];
+			wbval[0] = mret[2];
+			wbcnt = 1;
 		}
 		WB(wbcnt, wbreg, wbval, reg);
-		cerr << '}' << endl;
+		cerra << '}' << endl;
 		++cpuclk;
 	}
 	halt();
