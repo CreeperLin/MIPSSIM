@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 
 //	fas.open(argv[1]);
 //	assert(fas.is_open());
-#if DEBUG
+#if MANUAL
 	string asp = "1", inp, oup;
 	fas.open(asp + ".s");
 	inp = asp + ".in";
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	int m = compile();
 	cerr << "compiled!" << endl;
 	run(m);
-#if DEBUG
+#if MANUAL
 	fin.close();
 	fout.close();
 #endif

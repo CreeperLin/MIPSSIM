@@ -314,9 +314,8 @@ void eva(int &p)
 				{
 					int n = lex[++p].nval;
 					assert(lex[p].type == numt);
-					int t = 1 << n, s = t;
-					while (s < *cp && s < M) s += t;
-					*cp = s;
+					int t = 1 << n;
+					*cp = ((*cp - 1) / t + 1) * t;
 					break;
 				}
 				case 2://.ascii
@@ -481,7 +480,7 @@ int compile()
 	int pos = 0, s = lex.size();
 	//cerr << "lex:" << s << endl;
 //	for (int i = 0; i < s; ++i)
-		//cerr << i << ':' << lex[i] << endl;
+	//cerr << i << ':' << lex[i] << endl;
 	//cerr << "eva begin" << endl;
 	while (pos < s)
 	{

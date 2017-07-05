@@ -9,14 +9,16 @@ typedef int word;
 void (*insp[64])(int *ret, long long *pd);
 byte data[M];
 
-#define DEBUG 1
+#define DEBUG 0
+#define PIPE 0
+#define MANUAL 0
 const int TEXT = 0x500;
 const int DATA = 0x150000;
 int text_p = TEXT;
 int data_p = DATA;
 
 ifstream fas;
-#if DEBUG
+#if MANUAL
 ofstream fout;
 ifstream fin;
 #else

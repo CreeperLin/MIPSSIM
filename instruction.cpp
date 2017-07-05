@@ -191,51 +191,99 @@ void B(int *ret, long long *pd)
 }
 void BEQ(int *ret, long long *pd)
 {
-	if (pd[0] == pd[1]) GOTO(pd[2]);
+	if (pd[0] == pd[1])
+	{
+		GOTO(pd[2])
+	}
+	else hz_ctl = 0;
 }
 void BNE(int *ret, long long *pd)
 {
-	if (pd[0] != pd[1]) GOTO(pd[2]);
+	if (pd[0] != pd[1])
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BGE(int *ret, long long *pd)
 {
-	if (pd[0] >= pd[1]) GOTO(pd[2]);
+	if (pd[0] >= pd[1])
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BLE(int *ret, long long *pd)
 {
-	if (pd[0] <= pd[1]) GOTO(pd[2]);
+	if (pd[0] <= pd[1])
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BGT(int *ret, long long *pd)
 {
-	if (pd[0] > pd[1]) GOTO(pd[2]);
+	if (pd[0] > pd[1])
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BLT(int *ret, long long *pd)
 {
-	if (pd[0] < pd[1]) GOTO(pd[2]);
+	if (pd[0] < pd[1])
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BEQZ(int *ret, long long *pd)
 {
-	if (pd[0] == 0) GOTO(pd[2]);
+	if (pd[0] == 0)
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BNEZ(int *ret, long long *pd)
 {
-	if (pd[0] != 0) GOTO(pd[2]);
+	if (pd[0] != 0)
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BGEZ(int *ret, long long *pd)
 {
-	if (pd[0] >= 0) GOTO(pd[2]);
+	if (pd[0] >= 0)
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BLEZ(int *ret, long long *pd)
 {
-	if (pd[0] <= 0) GOTO(pd[2]);
+	if (pd[0] <= 0)
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BGTZ(int *ret, long long *pd)
 {
-	if (pd[0] > 0) GOTO(pd[2]);
+	if (pd[0] > 0)
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void BLTZ(int *ret, long long *pd)
 {
-	if (pd[0] < 0) GOTO(pd[2]);
+	if (pd[0] < 0)
+	{
+		GOTO(pd[2]);
+	}
+	else hz_ctl = 0;
 }
 void J(int *ret, long long *pd)
 {
@@ -380,12 +428,12 @@ void SYSCALL(int *ret, long long *pd)
 		case 9:
 		{
 			cerr << "###SIMALLOCATE" << endl;
-			int np = data_p + 100, t = 1 << 2, s = t;
-			while (s < np && s < M) s += t;
-			data_p = s + pd[1];
+			int np = data_p + 100, t = 1 << 2;
+			np = ((np - 1) / t + 1) * t;
+			data_p = np + pd[1];
 			ret[1] = ret[0] = 1;
 			ret[2] = 2;
-			ret[3] = s;
+			ret[3] = np;
 			break;
 		}
 		case 10:
@@ -401,7 +449,7 @@ void SYSCALL(int *ret, long long *pd)
 			ret[3] = 0;
 			break;
 		default:
-			cerr << "!sys" << endl;
+			cerr << "!sys:" << pd[0] << endl;
 			exit(2);
 	}
 }
