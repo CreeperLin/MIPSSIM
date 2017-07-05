@@ -428,8 +428,8 @@ void SYSCALL(int *ret, long long *pd)
 		case 9:
 		{
 			cerr << "###SIMALLOCATE" << endl;
-			int np = data_p + 100, t = 1 << 2;
-			np = ((np - 1) / t + 1) * t;
+			int np = data_p + 100;
+			np = ((np - 1) / 4 + 1) * 4;
 			data_p = np + pd[1];
 			ret[1] = ret[0] = 1;
 			ret[2] = 2;
