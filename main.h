@@ -10,7 +10,7 @@ void (*insp[64])(int *ret, long long *pd);
 byte data[M];
 
 #define DEBUG 0
-#define PIPE 0
+#define PIPE 1
 #define MANUAL 0
 const int TEXT = 0x500;
 const int DATA = 0x150000;

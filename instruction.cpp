@@ -195,7 +195,7 @@ void BEQ(int *ret, long long *pd)
 	{
 		GOTO(pd[2])
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BNE(int *ret, long long *pd)
 {
@@ -203,7 +203,7 @@ void BNE(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BGE(int *ret, long long *pd)
 {
@@ -211,7 +211,7 @@ void BGE(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BLE(int *ret, long long *pd)
 {
@@ -219,7 +219,7 @@ void BLE(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BGT(int *ret, long long *pd)
 {
@@ -227,7 +227,7 @@ void BGT(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BLT(int *ret, long long *pd)
 {
@@ -235,7 +235,7 @@ void BLT(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BEQZ(int *ret, long long *pd)
 {
@@ -243,7 +243,7 @@ void BEQZ(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BNEZ(int *ret, long long *pd)
 {
@@ -251,7 +251,7 @@ void BNEZ(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BGEZ(int *ret, long long *pd)
 {
@@ -259,7 +259,7 @@ void BGEZ(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BLEZ(int *ret, long long *pd)
 {
@@ -267,7 +267,7 @@ void BLEZ(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BGTZ(int *ret, long long *pd)
 {
@@ -275,7 +275,7 @@ void BGTZ(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void BLTZ(int *ret, long long *pd)
 {
@@ -283,7 +283,7 @@ void BLTZ(int *ret, long long *pd)
 	{
 		GOTO(pd[2]);
 	}
-	else hz_ctl = 0;
+	//else hz_ctl = 0;
 }
 void J(int *ret, long long *pd)
 {

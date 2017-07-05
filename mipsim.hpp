@@ -2,6 +2,7 @@
 #define MIPSSIM_H
 #include <bits/stdc++.h>
 #include "main.h"
+#include "branch_predict.hpp"
 using namespace std;
 #define cerra if(DEBUG) cerr
 
@@ -12,7 +13,13 @@ long long cpuclk;
 
 //public:
 
-int hz_ctl, hz_dat;
+int hz_ctl, hz_dat, purge;
+
+//stats
+int ctrl_stall_cnt = 0;
+int data_stall_cnt = 0;
+int bp_ptrue = 0, bp_pfalse = 0, bp_total = 0, bp_twrong = 0, bp_fwrong = 0;
+
 void IF(unsigned char *ins, long long &pc)
 {
 	cerra << "IF: ";
@@ -99,6 +106,16 @@ void EX(int *ret, int &op, long long *pa)
 	{
 		insp[op](ret, pa);
 		op = 0;
+		if (hz_ctl && !ret[1])
+		{
+			++bp_twrong;
+			hz_ctl = 0;
+		}
+		else if(!hz_ctl && ret[0] == 1 && ret[2] == 34)
+		{
+			++bp_fwrong;
+			purge = 1;
+		}
 	}
 //	if ((op > 32 && op < 50 ) || op == 51)
 //	{
@@ -153,13 +170,12 @@ void WB(int &wbcnt, int *wbreg, int *wbval, long long *reg)
 	wbcnt = 0;
 	cerra << endl;
 }
-//stats
-int ctrl_stall_cnt = 0;
-int data_stall_cnt = 0;
+
 void halt()
 {
 	cerr << "simulation halt: cpuclk:" << cpuclk << endl;
 	cerr << "ctrl stalls:" << ctrl_stall_cnt << '\t' << "data stalls:" << data_stall_cnt << endl;
+	cerr << "BP:" << "sum:" << bp_total << "T:" << bp_ptrue << " F:" << bp_pfalse << " TW:" << bp_twrong << " FW:" << bp_fwrong << " misrate:" << (double)(bp_fwrong + bp_twrong) / (double)(bp_total) << endl;
 }
 
 void run(int mp)
@@ -179,6 +195,9 @@ void run(int mp)
 	int wbcnt = 0, wbreg[5] = {0}, wbval[5] = {0};
 	int exwbc = 0, exwbr[5] = {0}, exwbv[5] = {0};
 	long long rfwd[35] = {0};
+
+	int bpnum = 0;
+
 	while (pc)
 	{
 		cerra << '>' << cpuclk << " pc:" << pc << ' ' << insstr[data[pc] - 1] << '{' << endl;
@@ -211,6 +230,17 @@ void run(int mp)
 				exwbr[exwbc] = ret[4];
 				exwbv[exwbc++] = ret[5];
 			}
+//			if (bpnum) BPFB(bpnum, (ret[0] == 1 && ret[2] == 34)), bpnum = 0;
+			if (purge)
+			{
+				cerra << "####PURGING PIPE PIPE STALL" << endl;
+				op = 0;
+				ins[0] = 0;
+				pd[0] = pd[1] = pd[2] = pd[3] = 0;
+
+				purge = 0;
+				hz_ctl = 1;
+			}
 		}
 		else if (ret[0] == 2)
 		{
@@ -237,7 +267,6 @@ void run(int mp)
 //		if (hz_ctl) continue;
 		ID(op, pd, ins, rfwd);
 
-//		if ((op > 32 && op < 50))
 		if ((op > 32 && op < 50) || (op == 51 && rfwd[2] > 9))
 		{
 			++ctrl_stall_cnt;
@@ -250,11 +279,25 @@ void run(int mp)
 			else
 			{
 				//branch predict
-				hz_ctl = 1;
-				cerra << "####CTRL HAZARD PIPE STALL" << endl;
+				bpnum = pc - 12;
+				int t = BP(bpnum);
+				++bp_total;
+				if (t)
+				{
+					++bp_ptrue;
+					hz_ctl = 1;
+					cerra << "####BRANCH PREDICT TRUE PIPE STALL" << endl;
+				}
+				else
+				{
+					++bp_pfalse;
+					cerra << "####BRANCH PREDICT FALSE" << endl;
+				}
 			}
 		}
+
 		IF(ins, pc);
+
 #else
 		IF(ins, pc);
 		ID(op, pd, ins, reg);
