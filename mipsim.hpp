@@ -175,7 +175,7 @@ void halt()
 {
 	cerr << "simulation halt: cpuclk:" << cpuclk << endl;
 	cerr << "ctrl stalls:" << ctrl_stall_cnt << '\t' << "data stalls:" << data_stall_cnt << endl;
-	cerr << "BP:" << "sum:" << bp_total << "T:" << bp_ptrue << " F:" << bp_pfalse << " TW:" << bp_twrong << " FW:" << bp_fwrong << " misrate:" << (double)(bp_fwrong + bp_twrong) / (double)(bp_total) << endl;
+	cerr << "BP:" << "sum:" << bp_total << " T:" << bp_ptrue << " F:" << bp_pfalse << " TW:" << bp_twrong << " FW:" << bp_fwrong << " misrate:" << (double)(bp_fwrong + bp_twrong) / (double)(bp_total) << endl;
 }
 
 void run(int mp)
@@ -230,7 +230,7 @@ void run(int mp)
 				exwbr[exwbc] = ret[4];
 				exwbv[exwbc++] = ret[5];
 			}
-//			if (bpnum) BPFB(bpnum, (ret[0] == 1 && ret[2] == 34)), bpnum = 0;
+			if (bpnum) BPFB(bpnum, (ret[0] == 1 && ret[2] == 34)), bpnum = 0;
 			if (purge)
 			{
 				cerra << "####PURGING PIPE PIPE STALL" << endl;
@@ -280,7 +280,7 @@ void run(int mp)
 			{
 				//branch predict
 				bpnum = pc - 12;
-				int t = BP(bpnum);
+				int t = BP(bpnum, pd[2]);
 				++bp_total;
 				if (t)
 				{
