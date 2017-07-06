@@ -174,8 +174,9 @@ void WB(int &wbcnt, int *wbreg, int *wbval, long long *reg)
 void halt()
 {
 	cerr << "simulation halt: cpuclk:" << cpuclk << endl;
-	cerr << "ctrl stalls:" << ctrl_stall_cnt << '\t' << "data stalls:" << data_stall_cnt << endl;
-	cerr << "BP:" << "sum:" << bp_total << " T:" << bp_ptrue << " F:" << bp_pfalse << " TW:" << bp_twrong << " FW:" << bp_fwrong << " misrate:" << (double)(bp_fwrong + bp_twrong) / (double)(bp_total) << endl;
+	fstat << "BP type:" << BPdesc[BPno] << endl;
+	fstat << "ctrl stalls:" << ctrl_stall_cnt << '\t' << "data stalls:" << data_stall_cnt << endl;
+	fstat << "BP:" << "sum:" << bp_total << " T:" << bp_ptrue << " F:" << bp_pfalse << " TW:" << bp_twrong << " FW:" << bp_fwrong << " misrate:" << (double)(bp_fwrong + bp_twrong) / (double)(bp_total) << endl;
 }
 
 void run(int mp)

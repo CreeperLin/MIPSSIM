@@ -17,6 +17,7 @@ const int DATA = 0x150000;
 int text_p = TEXT;
 int data_p = DATA;
 
+ofstream fstat;
 ifstream fas;
 #if MANUAL
 ofstream fout;

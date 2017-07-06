@@ -379,6 +379,7 @@ void MFLO(int *ret, long long *pd)
 }
 void NOP(int *ret, long long *pd)
 {
+	ret[0] = pd[0] = 0;
 	return;
 }
 void SYSCALL(int *ret, long long *pd)

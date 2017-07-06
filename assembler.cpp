@@ -11,8 +11,8 @@ enum tid
 struct token
 {
 	tid type;
-	string sval;
 	int nval;
+	string sval;
 	token(): type(asst), nval(0), sval() {}
 	token(tid _t, int _n): type(_t), nval(_n), sval() {}
 	friend ostream& operator<<(ostream &os, token &t)
@@ -299,8 +299,8 @@ void appexpr(string &str)
 	}
 }
 int *cp;
-int lbidx[10000], lblex[10000], lbcnt;
-void eva(int &p)
+int lbidx[100000], lblex[100000], lbcnt;
+void eva(unsigned int &p)
 {
 	//cerr << '@' << p << ' ' << lex[p] << endl;
 	if (p > lex.size()) return;
@@ -321,7 +321,7 @@ void eva(int &p)
 				case 2://.ascii
 				{
 					string &v = lex[++p].sval;
-					for (int i = 0; i < v.length(); ++i)
+					for (unsigned int i = 0; i < v.length(); ++i)
 					{
 						data[(*cp)++] = v[i];
 					}
@@ -330,7 +330,7 @@ void eva(int &p)
 				case 3://.asciiz
 				{
 					string &v = lex[++p].sval;
-					for (int i = 0; i < v.length(); ++i)
+					for (unsigned int i = 0; i < v.length(); ++i)
 					{
 						data[(*cp)++] = v[i];
 					}
@@ -470,14 +470,13 @@ void eva(int &p)
 int compile()
 {
 	string str;
-	int i = 1;
 	while (!fas.eof())
 	{
 		getline(fas, str);
 		//cerr << '#' << i++ << ' ' << str << endl;
 		appexpr(str);
 	}
-	int pos = 0, s = lex.size();
+	unsigned int pos = 0, s = lex.size();
 	//cerr << "lex:" << s << endl;
 //	for (int i = 0; i < s; ++i)
 	//cerr << i << ':' << lex[i] << endl;
