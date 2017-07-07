@@ -58,9 +58,9 @@ struct sm
 		else if (st < 1)st = 1;
 	}
 };
-int Bhist[100000];
+int Bhist[200000];
 int mask = (1 << N) - 1;
-sm PHT[100000][1 << N];
+sm PHT[200000][1 << N];
 
 //one bit
 int BPmap[100000];
@@ -109,7 +109,6 @@ void BPFB(int bnum, int taken)
 			if (pdct != taken || (ans < thershold && -ans < thershold))
 			{
 				W[i][0] += (taken) ? 1 : -1;
-//				int t = G;
 				int t = H[bnum];
 				for (int j = 1; j <= h; ++j)
 				{
