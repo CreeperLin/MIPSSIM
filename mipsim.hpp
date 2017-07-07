@@ -19,6 +19,7 @@ int hz_ctl, hz_dat, purge;
 int ctrl_stall_cnt = 0;
 int data_stall_cnt = 0;
 int bp_ptrue = 0, bp_pfalse = 0, bp_total = 0, bp_twrong = 0, bp_fwrong = 0;
+int inscnt;
 
 void IF(unsigned char *ins, long long &pc)
 {
@@ -32,6 +33,7 @@ void IF(unsigned char *ins, long long &pc)
 	for (int i = 0; i < 12; ++i) cerra << (int)ins[i] << ' ';
 	cerra << endl;
 	pc += 12;
+	++inscnt;
 }
 
 void ID(int &op, long long *pd, unsigned char* ins, long long *reg)
@@ -173,10 +175,11 @@ void WB(int &wbcnt, int *wbreg, int *wbval, long long *reg)
 
 void halt()
 {
-	cerr << "simulation halt: cpuclk:" << cpuclk << endl;
+	cerr << "simulation halt" << endl;
+	fstat << "cpuclk:" << cpuclk << " IPC:" << (double)inscnt / (double)cpuclk << endl;
 	fstat << "BP type:" << BPdesc[BPno] << endl;
 	fstat << "ctrl stalls:" << ctrl_stall_cnt << '\t' << "data stalls:" << data_stall_cnt << endl;
-	fstat << "BP:" << "sum:" << bp_total << " T:" << bp_ptrue << " F:" << bp_pfalse << " TW:" << bp_twrong << " FW:" << bp_fwrong << " misrate:" << (double)(bp_fwrong + bp_twrong) / (double)(bp_total) << endl;
+	fstat << "BP:" << "sum:" << bp_total << " T:" << bp_ptrue << " TW:" << bp_twrong << " F:" << bp_pfalse <<  " FW:" << bp_fwrong << " misrate:" << (double)(bp_fwrong + bp_twrong) / (double)(bp_total) << endl;
 }
 
 void run(int mp)
@@ -270,10 +273,10 @@ void run(int mp)
 
 		if ((op > 32 && op < 50) || (op == 51 && rfwd[2] > 9))
 		{
-			++ctrl_stall_cnt;
 			if (op == 33 || op > 45)
 			{
 				//stall
+				++ctrl_stall_cnt;
 				hz_ctl = 1;
 				cerra << "####CTRL HAZARD PIPE STALL" << endl;
 			}
@@ -285,6 +288,7 @@ void run(int mp)
 				++bp_total;
 				if (t)
 				{
+					++ctrl_stall_cnt;
 					++bp_ptrue;
 					hz_ctl = 1;
 					cerra << "####BRANCH PREDICT TRUE PIPE STALL" << endl;

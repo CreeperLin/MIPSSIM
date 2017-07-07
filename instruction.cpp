@@ -191,99 +191,51 @@ void B(int *ret, long long *pd)
 }
 void BEQ(int *ret, long long *pd)
 {
-	if (pd[0] == pd[1])
-	{
-		GOTO(pd[2])
-	}
-	//else hz_ctl = 0;
+	if (pd[0] == pd[1])	GOTO(pd[2])
 }
 void BNE(int *ret, long long *pd)
 {
-	if (pd[0] != pd[1])
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] != pd[1])	GOTO(pd[2]);
 }
 void BGE(int *ret, long long *pd)
 {
-	if (pd[0] >= pd[1])
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] >= pd[1])	GOTO(pd[2]);
 }
 void BLE(int *ret, long long *pd)
 {
-	if (pd[0] <= pd[1])
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] <= pd[1])	GOTO(pd[2]);
 }
 void BGT(int *ret, long long *pd)
 {
-	if (pd[0] > pd[1])
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] > pd[1])	GOTO(pd[2]);
 }
 void BLT(int *ret, long long *pd)
 {
-	if (pd[0] < pd[1])
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] < pd[1])	GOTO(pd[2]);
 }
 void BEQZ(int *ret, long long *pd)
 {
-	if (pd[0] == 0)
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] == 0)	GOTO(pd[2]);
 }
 void BNEZ(int *ret, long long *pd)
 {
-	if (pd[0] != 0)
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] != 0)	GOTO(pd[2]);
 }
 void BGEZ(int *ret, long long *pd)
 {
-	if (pd[0] >= 0)
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] >= 0)	GOTO(pd[2]);
 }
 void BLEZ(int *ret, long long *pd)
 {
-	if (pd[0] <= 0)
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] <= 0)	GOTO(pd[2]);
 }
 void BGTZ(int *ret, long long *pd)
 {
-	if (pd[0] > 0)
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] > 0) GOTO(pd[2]);
 }
 void BLTZ(int *ret, long long *pd)
 {
-	if (pd[0] < 0)
-	{
-		GOTO(pd[2]);
-	}
-	//else hz_ctl = 0;
+	if (pd[0] < 0) GOTO(pd[2]);
 }
 void J(int *ret, long long *pd)
 {
