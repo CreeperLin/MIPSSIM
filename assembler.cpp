@@ -1,9 +1,16 @@
 #include <bits/stdc++.h>
 #include "main.h"
 #include "instruction.cpp"
-//#include <iostream>
 using namespace std;
 
+int *cp;
+int lbidx[100000], lblex[100000], lbcnt;
+class MIPSAssembler
+{
+unordered_map<string, byte> opmap;
+unordered_map<string, int> lbmap;
+vector<token> lex;
+	
 enum tid
 {
     asst, opct, regt, numt, litt, addt, labt, lbdt
@@ -48,11 +55,8 @@ struct token
 		return os;
 	}
 };
-unordered_map<string, byte> opmap;
-unordered_map<string, int> lbmap;
-vector<token> lex;
 
-void init()
+MIPSAssembler()
 {
 	for (int i = 0; i < 32; ++i)
 	{
@@ -69,9 +73,7 @@ void init()
 	}
 	for (int i = 0; i < 51; ++i)
 	{
-//		opmap[insstr[i]] = (i + 1) | instyp[i];
 		opmap[insstr[i]] = i + 1;
-		//cerr << insstr[i] << ' ' << (int)opmap[insstr[i]] << endl;
 	}
 
 	insp[1] = ADD;
@@ -159,6 +161,7 @@ token getlit(string &str, int &p)
 						break;
 					default:
 						cerr << "!esc char.";
+						exit(1);
 				}
 				break;
 			}
@@ -205,6 +208,7 @@ token gettxt(string &str, int &p, tid typ)
 						break;
 					default:
 						cerr << "!esc char.";
+						exit(1);
 				}
 				break;
 			}
@@ -218,7 +222,6 @@ token gettxt(string &str, int &p, tid typ)
 		++p;
 	}
 	if (typ == opct && ret.type != lbdt && !opmap[v]) ret.type = labt;
-//	//cerr << "gettxt:" << ret << endl;
 	return ret;
 }
 token getnum(string &str, int &p)
@@ -238,7 +241,6 @@ token getnum(string &str, int &p)
 	{
 		if (str[++p] != '$')
 		{
-			//cerr << "addr" << endl;
 			return ret;
 		}
 		ret.type = addt;
@@ -248,7 +250,6 @@ token getnum(string &str, int &p)
 		}
 		++p;
 	}
-//	//cerr << "getnum:" << ret << endl;
 	return ret;
 }
 void appexpr(string &str)
@@ -298,11 +299,8 @@ void appexpr(string &str)
 		}
 	}
 }
-int *cp;
-int lbidx[100000], lblex[100000], lbcnt;
 void eva(unsigned int &p)
 {
-	//cerr << '@' << p << ' ' << lex[p] << endl;
 	if (p > lex.size()) return;
 	switch (lex[p].type)
 	{
@@ -375,25 +373,20 @@ void eva(unsigned int &p)
 				}
 				case 8://.data
 					cp = &data_p;
-//					//cerr << "$.data:" << *cp << ' ' << data_p << endl;
 					break;
 				case 9://.text
 					cp = &text_p;
-//					//cerr << "$.text:" << *cp << ' ' << text_p << endl;
 					break;
 				default:
-//					cerr << "!eva asst " << lex[p] << endl;
 					exit(1);
 			}
 			++p;
-			//cerr << '%' << data_p << ' ' << text_p << endl;
 			break;
 		}
 		case opct:
 		{
 			assert(cp == &text_p);
 			data[*cp] = opmap[lex[p].sval];
-			//cerr << "$opct:" << *cp << ' ' << (int)data[*cp] << endl;
 			int cnt = 0, rcnt = 0, f = 1;
 			while (f)
 			{
@@ -436,7 +429,6 @@ void eva(unsigned int &p)
 						{
 							lbidx[lbcnt] = *cp;
 							lblex[lbcnt++] = p;
-							//cerr << "undefined label:" << lex[p].sval << '@' << *cp << endl;
 						}
 						break;
 					}
@@ -449,7 +441,6 @@ void eva(unsigned int &p)
 						break;
 					}
 					default:
-						//cerr << "!eva opt:" << lex[p] << endl;
 						exit(1);
 				}
 			}
@@ -459,11 +450,9 @@ void eva(unsigned int &p)
 		case lbdt:
 		{
 			lbmap[lex[p++].sval] = *cp;
-			//cerr << "label defined" << lex[p - 1].sval << '@' << *cp << endl;
 			break;
 		}
 		default:
-//			cerr << "!eva:" << lex[p] << endl;
 			exit(1);
 	}
 }
@@ -473,23 +462,18 @@ int compile()
 	while (!fas.eof())
 	{
 		getline(fas, str);
-		//cerr << '#' << i++ << ' ' << str << endl;
 		appexpr(str);
 	}
 	unsigned int pos = 0, s = lex.size();
-	//cerr << "lex:" << s << endl;
-//	for (int i = 0; i < s; ++i)
-	//cerr << i << ':' << lex[i] << endl;
-	//cerr << "eva begin" << endl;
 	while (pos < s)
 	{
 		eva(pos);
 	}
 	for (int i = 0; i < lbcnt; ++i)
 	{
-		//cerr << "relabel:" << lbidx[i] << ' ' << lex[lblex[i]].sval << endl;
 		assert(lbmap[lex[lblex[i]].sval] != 0);
 		memcpy(data + lbidx[i] + 8, &lbmap[lex[lblex[i]].sval], sizeof(word));
 	}
 	return lbmap["main"];
 }
+};
