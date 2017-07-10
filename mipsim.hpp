@@ -1,18 +1,13 @@
 #ifndef MIPSSIM_H
 #define MIPSSIM_H
 #include <bits/stdc++.h>
+#include <thread>
 #include "main.h"
 #include "branch_predict.hpp"
 using namespace std;
 #define cerra if(DEBUG) cerr
 
-//class mipsim
-//{
-
 long long cpuclk;
-
-//public:
-
 int hz_ctl, hz_dat, purge;
 
 //stats
@@ -20,6 +15,21 @@ int ctrl_stall_cnt = 0;
 int data_stall_cnt = 0;
 int bp_ptrue = 0, bp_pfalse = 0, bp_total = 0, bp_twrong = 0, bp_fwrong = 0;
 int inscnt;
+
+void ISSUE()
+{
+	
+}
+
+void EXEC()
+{
+	
+}
+
+void WRITE()
+{
+	
+}
 
 void IF(unsigned char *ins, long long &pc)
 {
@@ -83,9 +93,6 @@ void ID(int &op, long long *pd, unsigned char* ins, long long *reg)
 		cerra << "O:";
 		if (op == 51)
 		{
-//			pd[0] = reg[2];
-//			pd[1] = reg[4];
-//			pd[2] = reg[5];
 			pd[0] = reg[2];
 			pd[1] = reg[4];
 			pd[2] = reg[5];
@@ -97,7 +104,6 @@ void ID(int &op, long long *pd, unsigned char* ins, long long *reg)
 		exit(1);
 	}
 	cerra << '\t' << pd[0] << ' ' << pd[1] << ' ' << pd[2] << endl;
-//	return op;
 }
 
 void EX(int *ret, int &op, long long *pa)
@@ -119,10 +125,6 @@ void EX(int *ret, int &op, long long *pa)
 			purge = 1;
 		}
 	}
-//	if ((op > 32 && op < 50 ) || op == 51)
-//	{
-//		hz_ctl = 0;
-//	}
 }
 
 void MA(int *ret, int *pa)
@@ -149,8 +151,6 @@ void MA(int *ret, int *pa)
 				exit(2);
 		}
 		cerra << " val:" << ret[2];
-//		wbval[wbcnt] = 0;
-//		memcpy(wbval + wbcnt, data + maddr, masiz);
 	}
 	else if (pa[0] == 3)
 	{
@@ -211,7 +211,6 @@ void run(int mp)
 		MA(mret, ret);
 		if (mret[0])
 		{
-//			assert(wbcnt == 0);
 			wbreg[wbcnt] = mret[1];
 			wbval[wbcnt++] = mret[2];
 			hz_dat = 0;
@@ -225,8 +224,6 @@ void run(int mp)
 		EX(ret, op, pd);
 		if (ret[0] == 1)
 		{
-//			assert(wbcnt == 0);
-//			for (int i=0;i<ret[1];++i) exwbr[exwbc]=ret[2]
 			exwbr[exwbc] = ret[2];
 			exwbv[exwbc++] = ret[3];
 			if (ret[1] == 2)
@@ -268,7 +265,6 @@ void run(int mp)
 			rfwd[exwbr[wcnt]] = exwbv[wcnt];
 		}
 		cerra << endl;
-//		if (hz_ctl) continue;
 		ID(op, pd, ins, rfwd);
 
 		if ((op > 32 && op < 50) || (op == 51 && rfwd[2] > 9))
